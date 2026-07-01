@@ -12,6 +12,7 @@
 import os
 import sys
 import warnings
+from pathlib import Path
 
 # Manipulación de datos
 import pandas as pd
@@ -65,22 +66,23 @@ def carga_archivos(path):
         print(f"   {i}. {f}")
     print('*' * 80)
     return files
-      
+
 
 
 # In[3]:
 
 
-# Funcion para leer archivos CSV o Excel.
 def leer_archivos(ruta_completa):
     try:
-        ruta_completa = ruta_completa.strip()
-        _, extension = os.path.splitext(ruta_completa.lower())
+        # Convertimos siempre a Path (robusto y multiplataforma)
+        ruta_completa = Path(ruta_completa)
+
+        # Extraemos la extensión de forma segura
+        extension = ruta_completa.suffix.lower()
 
         if extension == '.csv':
-            # Creamos la variable encodings para normalizar el codigo.
             encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']
-            
+
             for encoding in encodings:
                 try:
                     df = pd.read_csv(ruta_completa, sep=None, engine='python', encoding=encoding)
@@ -88,14 +90,14 @@ def leer_archivos(ruta_completa):
                     return df
                 except UnicodeDecodeError:
                     continue
-            
-            # Comprobamos si existe algun tipo de error de codificación.
+
             print(f"   ⚠️ No se pudo decodificar con codificaciones estándar")
             return None
-            
+
         elif extension in ('.xlsx', '.xls'):
             df = pd.read_excel(ruta_completa)
             return df
+
         else:
             print(f"   ⚠️ Formato no compatible: {extension}")
             return None
@@ -152,11 +154,11 @@ def exploracion_datos(df):
     df_valores_nunicos.rename(columns={0:'Numero valores unicos'}, inplace=True)
     df_por_valores_nunicos.rename(columns={0:'Porcentaje valores unicos'}, inplace=True)
     df_exploracion = pd.concat([df_tipos, df_nulos, df_porc_nulos,df_valores_nunicos,df_por_valores_nunicos,df_valores_unicos], axis=1)
-    
+
     # MOSTRAR el resumen final
     display(df_exploracion)
     print('*'*100)
-    
+
     return df_exploracion
 
 
@@ -175,7 +177,7 @@ def renombrar_columnas(df):
        'last_contact_duration_mins', 'last_contact_duration_mins_group',
        'employement_variation_rate_group','consumer_price_index_group','consumer_confidence_index_group','euribor_3m_group']
     df.columns = nombre_columnas
-    
+
     return df
 
 
@@ -193,7 +195,7 @@ def normalizar_textos(df):
         dict_job={'admin':'administrative_staff'}
         if col=='job':
             df[col]=df[col].replace(dict_job)
-            
+
     return df
 
 
